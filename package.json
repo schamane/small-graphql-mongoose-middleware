@@ -1,14 +1,13 @@
 {
   "name": "@schamane/small-graphql-mongoose-middleware",
   "version": "0.9.2",
+  "type": "module",
   "main": "build/index.js",
   "module": "build/index.js",
   "source": "src/index.ts",
   "types": "build/index.d.ts",
   "dependencies": {
     "lodash": "^4.17.20",
-    "mongoose": "^5.11.11",
-    "passport": "^0.4.1",
     "source-map-support": "^0.5.19"
   },
   "scripts": {
@@ -43,12 +42,16 @@
     "microbundle-crl": "^0.13.11",
     "prettier-eslint": "^12.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "4.1.3"
+    "typescript": "4.1.3",
+    "mongoose": "^5.11.11",
+    "passport": "^0.4.1"
   },
   "peerDependacies": {
     "apollo-datasource": "^0.7.2",
     "apollo-server-core": "^2.19.1",
-    "apollo-server-express": "^2.19.1"
+    "apollo-server-express": "^2.19.1",
+    "mongoose": "^5.11.11",
+    "passport": "^0.4.1"
   },
   "peerDevDependacies": {
     "@types/express": "^4.17.9",
@@ -57,7 +60,9 @@
   "resolutions": {
     "apollo-datasource": "^0.7.2",
     "apollo-server-core": "^2.19.1",
-    "apollo-server-express": "^2.19.1"
+    "apollo-server-express": "^2.19.1",
+    "mongoose": "^5.11.11",
+    "passport": "^0.4.1"
   },
   "files": [
     "build"
