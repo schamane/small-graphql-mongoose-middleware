@@ -1,0 +1,93 @@
+import { get, compact, map, merge } from 'lodash';
+import type { Application, Request } from 'express';
+import type { GraphQLSchema } from 'graphql';
+import {
+  ApolloServer,
+  ApolloServerExpressConfig,
+  IExecutableSchemaDefinition,
+  IResolvers,
+  makeExecutableSchema,
+  PubSub
+} from 'apollo-server-express';
+import { Server } from 'http';
+import { authenticate } from 'passport';
+import { EventEmitter } from 'events';
+import { ApolloServerDataSources } from './grapqhl-extras';
+import { User } from './auth/userModel';
+
+export type GrapqhContext = {
+  id: string;
+  groups: string[];
+};
+
+export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
+  const typeDefs = compact(map(schemasDefs, 'typeDef'));
+  const resolvers = compact<IResolvers>(merge(map(schemasDefs, 'resolvers')));
+  return makeExecutableSchema({
+    typeDefs,
+    resolvers
+  });
+};
+
+export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User;
+
+const graphqlAuth = (authStrategy: string | string[], createContextFn: graphQLAuthCreateContext) => async ({
+  req,
+  connection
+}: {
+  req: Request;
+  connection: unknown;
+}): Promise<User> => {
+  if (connection) {
+    return get(connection, 'context');
+  }
+  return new Promise((resolve, reject) =>
+    authenticate(authStrategy, { session: false }, (err, user, authInfo) =>
+      err ? reject(err) : resolve(createContextFn ? createContextFn(user, authInfo) : user)
+    )(req)
+  );
+};
+
+export interface GraphQlOptions {
+  path: string;
+  introspection: boolean;
+  playground: boolean;
+  tracing: boolean;
+}
+
+export function initGraphQl(
+  app: Application,
+  dataSources: ApolloServerDataSources,
+  graphQlOptions: GraphQlOptions,
+  schema: GraphQLSchema
+): ApolloServer {
+  const options: ApolloServerExpressConfig = {
+    schema,
+    context: graphqlAuth,
+    dataSources,
+    playground: graphQlOptions.playground,
+    subscriptions: graphQlOptions.path
+  };
+
+  const server = new ApolloServer(options);
+  server.applyMiddleware({ app, ...graphQlOptions });
+  return server;
+}
+
+export function initGraphQlSubscriptions(graphQlServer: ApolloServer, server: Server): void {
+  graphQlServer.installSubscriptionHandlers(server);
+}
+
+export function isAllowedUser(user: User): boolean {
+  return !!user;
+}
+
+// TODO: rework pubSub instanciating
+// export const ApplicationPubSub = new PubSub();
+
+const biggerEventEmitter = new EventEmitter();
+biggerEventEmitter.setMaxListeners(30);
+
+export const ApplicationPubSub = new PubSub({ eventEmitter: biggerEventEmitter });
+
+// export type ResolverFn = (...params: unknown[]) => unknown;
