@@ -23,6 +23,7 @@
     "clean:build": "rimraf build",
     "clean:build:cache": "rimraf build .buildcache",
     "clean": "npm run -s clean:build && npm run -s clean:build:cache",
+    "prepublishOnly": "npm run build",
     "build": "npm run clean && tsc",
     "watch": "tsc -w",
     "build-micro": "microbundle-crl --no-compress --target node --external natives --format modern,cjs",
