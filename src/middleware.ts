@@ -55,12 +55,12 @@ export interface GraphQlOptions {
   tracing: boolean;
 }
 
-export function initGraphQl(
+export const GraphQlServer = (
   app: Application,
   dataSources: ApolloServerDataSources,
   graphQlOptions: GraphQlOptions,
   schema: GraphQLSchema
-): ApolloServer {
+): ApolloServer => {
   const options: ApolloServerExpressConfig = {
     schema,
     context: graphqlAuth,
@@ -72,15 +72,15 @@ export function initGraphQl(
   const server = new ApolloServer(options);
   server.applyMiddleware({ app, ...graphQlOptions });
   return server;
-}
+};
 
-export function initGraphQlSubscriptions(graphQlServer: ApolloServer, server: Server): void {
+export const installGraphQlSubscriptions = (graphQlServer: ApolloServer, server: Server): void => {
   graphQlServer.installSubscriptionHandlers(server);
-}
+};
 
-export function isAllowedUser(user: User): boolean {
+export const isAllowedUser = (user: User): boolean => {
   return !!user;
-}
+};
 
 // TODO: rework pubSub instanciating
 // export const ApplicationPubSub = new PubSub();
