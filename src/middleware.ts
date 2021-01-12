@@ -31,7 +31,7 @@ export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLS
 
 export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User;
 
-const graphqlAuth = (authStrategy: string | string[], createContextFn: graphQLAuthCreateContext) => async ({
+const graphqlAuth = (authStrategy: string | string[], createContextFn?: graphQLAuthCreateContext) => async ({
   req,
   connection
 }: {
@@ -59,11 +59,13 @@ export const GraphQlServer = (
   app: Application,
   dataSources: ApolloServerDataSources,
   graphQlOptions: GraphQlOptions,
-  schema: GraphQLSchema
+  schema: GraphQLSchema,
+  authStrategy: string | string[],
+  createContextFn?: graphQLAuthCreateContext
 ): ApolloServer => {
   const options: ApolloServerExpressConfig = {
     schema,
-    context: graphqlAuth,
+    context: graphqlAuth(authStrategy, createContextFn),
     dataSources,
     playground: graphQlOptions.playground,
     subscriptions: graphQlOptions.path
