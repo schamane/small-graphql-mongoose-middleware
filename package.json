@@ -16,9 +16,10 @@
     "clean:build:cache": "rimraf build .buildcache",
     "clean": "npm run -s clean:build && npm run -s clean:build:cache",
     "prepublishOnly": "npm run build",
-    "build:check": "npm run clean && tsc",
-    "build": "microbundle-crl --no-compress --target node --external natives --format modern,cjs",
-    "watch": "microbundle-crl watch --no-compress --target node --external util,events,http --format modern,cjs"
+    "build:check": "tsc",
+    "build": "npm run clean && tsc",
+    "build-micro": "microbundle-crl --no-compress --target node --external util,events,http --format modern,cjs",
+    "watch-micro": "microbundle-crl watch --no-compress --target node --external util,events,http --format modern,cjs"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",
