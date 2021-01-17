@@ -1,6 +1,6 @@
 {
   "name": "@schamane/small-graphql-mongoose-middleware",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "main": "build/index.js",
   "module": "build/index.js",
   "source": "src/index.ts",
@@ -78,7 +78,7 @@
   "author": "Nazar Kulyk <schamane@myeburg.net> (https://myeburg.net)",
   "license": "MIT",
   "engines": {
-    "node": "^12.14.0",
-    "npm": "^6.14.0"
+    "node": "^14",
+    "npm": "^6.14"
   }
 }
