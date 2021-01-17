@@ -29,7 +29,7 @@ export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLS
   });
 };
 
-export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User;
+export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => Promise<User>;
 
 const graphqlAuth = (authStrategy: string | string[], createContextFn?: graphQLAuthCreateContext) => async ({
   req,
@@ -42,8 +42,8 @@ const graphqlAuth = (authStrategy: string | string[], createContextFn?: graphQLA
     return get(connection, 'context');
   }
   return new Promise((resolve, reject) =>
-    authenticate(authStrategy, { session: false }, (err, user, authInfo) =>
-      err ? reject(err) : resolve(createContextFn ? createContextFn(user, authInfo) : user)
+    authenticate(authStrategy, { session: false }, async (err, user, authInfo) =>
+      err ? reject(err) : resolve(createContextFn ? await createContextFn(user, authInfo) : user)
     )(req)
   );
 };
