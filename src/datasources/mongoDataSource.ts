@@ -58,6 +58,17 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     return this.findById(_id);
   }
 
+  public async import(data: T[]): Promise<number> {
+    const {
+      db,
+      collection: { name }
+    } = this.Entity;
+    const { insertedCount } = await db.collection(name).insertMany(data);
+    // eslint-disable-next-line no-console
+    console.debug(`Inserted ${name}:`, insertedCount);
+    return insertedCount;
+  }
+
   public async truncate(): Promise<void> {
     const {
       db,
