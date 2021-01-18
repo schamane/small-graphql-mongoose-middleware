@@ -1,6 +1,23 @@
 import { DataSource, DataSourceConfig } from 'apollo-datasource';
-import { isArray, filter, flatten, get, head, keys, last, map, merge, includes, some, orderBy, uniq, unzip, uniqBy } from 'lodash';
-import { Document, Model, Query, UpdateQuery } from 'mongoose';
+import {
+  isArray,
+  filter,
+  flatten,
+  get,
+  head,
+  keys,
+  last,
+  map,
+  merge,
+  includes,
+  some,
+  orderBy,
+  uniq,
+  unzip,
+  uniqBy,
+  isFunction
+} from 'lodash';
+import type { Document, FilterQuery, Model, Query, UpdateQuery } from 'mongoose';
 import { Filter, QueryFieldsType, Sorter } from './mongo';
 import { GrapqhContext } from '..';
 import {
@@ -83,7 +100,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   public async findByIds(ids: string[]): Promise<T[]> {
     // return this.Entity.find({ _id: { $in: map(ids, Types.ObjectId)] } });
-    return this.Entity.find().where('_id').in(ids).exec();
+    return this.Entity.find(this.entityPreQuery({})).where('_id').in(ids).exec();
   }
 
   protected async findById(id: string): Promise<T> {
@@ -92,7 +109,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   protected async find(filters: Filter | Filter[], sort?: Sorter, distinct?: string): Promise<T[]> {
     const query = isArray(filters) ? filtersToQuery(filters, this.fieldTranslations) : filterToQuery(filters, this.fieldTranslations);
-    const entity = this.Entity.find(query);
+    const entity = this.Entity.find(this.entityPreQuery(query));
     if (this.limit) {
       entity.limit(this.limit);
     }
@@ -102,11 +119,13 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   protected async count(filters: Filter | Filter[], distinct?: string): Promise<number> {
     const query = isArray(filters) ? filtersToQuery(filters, this.fieldTranslations) : filterToQuery(filters, this.fieldTranslations);
     const entity = this.Entity;
-    return distinct ? entity.distinct(distinct).countDocuments(query) : entity.countDocuments(query);
+    return distinct
+      ? entity.distinct(distinct).countDocuments(this.entityPreQuery(query))
+      : entity.countDocuments(this.entityPreQuery(query));
   }
 
   protected async all(sort?: Sorter, distinct?: string): Promise<T[]> {
-    const entity = this.Entity.find();
+    const entity = this.Entity.find(this.entityPreQuery({}));
     if (this.limit) {
       entity.limit(this.limit);
     }
@@ -130,7 +149,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   private entityPreSave(entity: Partial<T>): Partial<T> {
     let result = entity;
     map(this.extensions, (ext) => {
-      result = ext.entityPreSave(result);
+      result = ext.entityPreSave && isFunction(ext.entityPreSave) ? ext.entityPreSave(result) : result;
     });
     return result;
   }
@@ -138,14 +157,22 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   private entityPreUpdate(entity: Partial<T>): UpdateQuery<T> {
     let result = entity;
     map(this.extensions, (ext) => {
-      result = ext.entityPreUpdate(result);
+      result = ext.entityPreUpdate && isFunction(ext.entityPreUpdate) ? ext.entityPreUpdate(result) : result;
     });
     return (result as unknown) as UpdateQuery<T>;
   }
 
+  private entityPreQuery(query: FilterQuery<T>): FilterQuery<T> {
+    let result = query;
+    map(this.extensions, (ext) => {
+      result = ext.entityPreQuery && ext.entityPreQuery ? ext.entityPreQuery(result) : result;
+    });
+    return query;
+  }
+
   public async values<V extends unknown>(attribute: string, language: string): Promise<V[]> {
     const query = { ...languageFilter(attribute, language), ...filterToQuery(this.valuesFilter(), this.fieldTranslations) };
-    const res = await this.Entity.find(query).select(translationsFieldPath(attribute));
+    const res = await this.Entity.find(this.entityPreQuery(query)).select(translationsFieldPath(attribute));
 
     // detect if translation is in object or array
     const firstItem = head(res);
