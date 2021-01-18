@@ -1,14 +1,12 @@
 import { omit } from 'lodash';
 import type { Document } from 'mongoose';
 import { GrapqhContext } from '..';
+import { MutationMongoDataSourceExtension } from './dataaccess/mutationMongoDataSourceExtension';
 
-export class BasicEntityExtension<T extends Document, TContext extends GrapqhContext> {
-  private context: TContext;
-
-  initialize(context: TContext): void {
-    this.context = context;
-  }
-
+export class BasicEntityExtension<T extends Document, TContext extends GrapqhContext> extends MutationMongoDataSourceExtension<
+  T,
+  TContext
+> {
   public entityPreSave(entity: Partial<T>): Partial<T> {
     return {
       ...entity,
