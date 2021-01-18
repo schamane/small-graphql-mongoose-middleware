@@ -167,7 +167,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     map(this.extensions, (ext) => {
       result = ext.entityPreQuery && ext.entityPreQuery ? ext.entityPreQuery(result) : result;
     });
-    return query;
+    return result;
   }
 
   public async values<V extends unknown>(attribute: string, language: string): Promise<V[]> {
