@@ -48,7 +48,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   private limit: number | undefined;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected extensions: any[];
+  private extensions: any[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(entity: Model<T>, fieldTranslations: QueryFieldsType, exts?: any[]) {
