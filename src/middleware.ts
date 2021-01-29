@@ -7,6 +7,7 @@ import {
   IExecutableSchemaDefinition,
   IResolvers,
   makeExecutableSchema,
+  PlaygroundConfig,
   PubSub
 } from 'apollo-server-express';
 import { Server } from 'http';
@@ -51,7 +52,7 @@ const graphqlAuth = (authStrategy: string | string[], createContextFn?: graphQLA
 export interface GraphQlOptions {
   path: string;
   introspection: boolean;
-  playground: boolean;
+  playground?: PlaygroundConfig;
   tracing: boolean;
 }
 
