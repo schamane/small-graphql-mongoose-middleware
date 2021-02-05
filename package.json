@@ -5,6 +5,9 @@
   "module": "build/index.js",
   "source": "src/index.ts",
   "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
   "dependencies": {
     "lodash": "^4.17.20",
     "source-map-support": "^0.5.19"
