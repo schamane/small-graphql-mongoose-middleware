@@ -1,6 +1,6 @@
 {
   "name": "@schamane/small-graphql-mongoose-middleware",
-  "version": "0.9.16",
+  "version": "0.9.17",
   "main": "build/index.js",
   "module": "build/index.js",
   "source": "src/index.ts",
