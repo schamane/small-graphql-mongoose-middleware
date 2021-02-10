@@ -6,5 +6,5 @@ export abstract class QueryMongoDataSourceExtension<
   T extends Document,
   TContext extends GrapqhContext
 > extends BasicMongoDataSourceExtension<T, TContext> {
-  public abstract entityPreQuery(query: FilterQuery<T>): FilterQuery<T>;
+  public abstract entityPreQuery(query: FilterQuery<T>): Promise<FilterQuery<T>>;
 }

@@ -26,7 +26,8 @@ import {
   translateSorter,
   languageFilter,
   translationsFieldPath,
-  translationsFieldStringPath
+  translationsFieldStringPath,
+  serialExec
 } from '../utils';
 import { SortDirection } from './mongo/filter';
 
@@ -99,8 +100,10 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   }
 
   public async findByIds(ids: string[]): Promise<T[]> {
-    // return this.Entity.find({ _id: { $in: map(ids, Types.ObjectId)] } });
-    return this.Entity.find(this.entityPreQuery({})).where('_id').in(ids).exec();
+    return this.Entity.find(await this.entityPreQuery({}))
+      .where('_id')
+      .in(ids)
+      .exec();
   }
 
   protected async findById(id: string): Promise<T> {
@@ -109,7 +112,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   protected async find(filters: Filter | Filter[], sort?: Sorter, distinct?: string): Promise<T[]> {
     const query = isArray(filters) ? filtersToQuery(filters, this.fieldTranslations) : filterToQuery(filters, this.fieldTranslations);
-    const entity = this.Entity.find(this.entityPreQuery(query));
+    const entity = this.Entity.find(await this.entityPreQuery(query));
     if (this.limit) {
       entity.limit(this.limit);
     }
@@ -120,12 +123,12 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     const query = isArray(filters) ? filtersToQuery(filters, this.fieldTranslations) : filterToQuery(filters, this.fieldTranslations);
     const entity = this.Entity;
     return distinct
-      ? entity.distinct(distinct).countDocuments(this.entityPreQuery(query))
-      : entity.countDocuments(this.entityPreQuery(query));
+      ? entity.distinct(distinct).countDocuments(await this.entityPreQuery(query))
+      : entity.countDocuments(await this.entityPreQuery(query));
   }
 
   protected async all(sort?: Sorter, distinct?: string): Promise<T[]> {
-    const entity = this.Entity.find(this.entityPreQuery({}));
+    const entity = this.Entity.find(await this.entityPreQuery({}));
     if (this.limit) {
       entity.limit(this.limit);
     }
@@ -162,17 +165,17 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     return (result as unknown) as UpdateQuery<T>;
   }
 
-  private entityPreQuery(query: FilterQuery<T>): FilterQuery<T> {
+  private async entityPreQuery(query: FilterQuery<T>): Promise<FilterQuery<T>> {
     let result = query;
-    map(this.extensions, (ext) => {
-      result = ext.entityPreQuery && ext.entityPreQuery ? ext.entityPreQuery(result) : result;
+    serialExec(this.extensions, async (ext) => {
+      result = ext.entityPreQuery && ext.entityPreQuery ? await ext.entityPreQuery(result) : result;
     });
     return result;
   }
 
   public async values<V extends unknown>(attribute: string, language: string): Promise<V[]> {
     const query = { ...languageFilter(attribute, language), ...filterToQuery(this.valuesFilter(), this.fieldTranslations) };
-    const res = await this.Entity.find(this.entityPreQuery(query)).select(translationsFieldPath(attribute));
+    const res = await this.Entity.find(await this.entityPreQuery(query)).select(translationsFieldPath(attribute));
 
     // detect if translation is in object or array
     const firstItem = head(res);
