@@ -13,12 +13,14 @@ import {
 import { Server } from 'http';
 import { authenticate } from 'passport';
 import { EventEmitter } from 'events';
+import type { DataSource } from 'apollo-datasource';
 import { ApolloServerDataSources } from './grapqhl-extras';
 import { User } from './auth/userModel';
 
 export type GrapqhContext = {
   id: string;
   groups: string[];
+  dataSources: Record<string, DataSource>;
 };
 
 export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
