@@ -17,7 +17,7 @@ import {
   uniqBy,
   isFunction
 } from 'lodash';
-import type { Document, FilterQuery, Model, Query, UpdateQuery } from 'mongoose';
+import { Document, FilterQuery, Model, Query, Types, UpdateQuery } from 'mongoose';
 import { Filter, QueryFieldsType, Sorter } from './mongo';
 import { GrapqhContext } from '..';
 import {
@@ -100,10 +100,9 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   }
 
   public async findByIds(ids: string[]): Promise<T[]> {
-    return this.Entity.find(await this.entityPreQuery({}))
-      .where('_id')
-      .in(ids)
-      .exec();
+    const objectIds = map(ids, Types.ObjectId);
+    const query = ({ _id: { $in: objectIds } } as unknown) as FilterQuery<T>;
+    return this.Entity.find(await this.entityPreQuery(query)).exec();
   }
 
   protected async findById(id: string): Promise<T> {
