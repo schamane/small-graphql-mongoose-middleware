@@ -167,7 +167,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   private async entityPreQuery(query: FilterQuery<T>): Promise<FilterQuery<T>> {
     let result = query;
-    serialExec(this.extensions, async (ext) => {
+    await serialExec(this.extensions, async (ext) => {
       result = ext.entityPreQuery && ext.entityPreQuery ? await ext.entityPreQuery(result) : result;
     });
     return result;
