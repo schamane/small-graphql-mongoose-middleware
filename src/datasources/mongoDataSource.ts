@@ -37,6 +37,8 @@ interface LodashSort {
   direction: LodashSortDirection[];
 }
 
+const { ObjectId } = Types;
+
 export abstract class MongoDataSource<T extends Document, TContext extends GrapqhContext = GrapqhContext> extends DataSource<TContext> {
   protected Entity: Model<T>;
 
@@ -100,13 +102,14 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
   }
 
   public async findByIds(ids: string[]): Promise<T[]> {
-    const objectIds = map(ids, Types.ObjectId);
+    const objectIds = map(ids, ObjectId);
     const query = ({ _id: { $in: objectIds } } as unknown) as FilterQuery<T>;
     return this.Entity.find(await this.entityPreQuery(query)).exec();
   }
 
   protected async findById(id: string): Promise<T> {
-    return this.Entity.findById(id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.Entity.findOne(await this.entityPreQuery({ _id: ObjectId(id) } as any));
   }
 
   protected async find(filters: Filter | Filter[], sort?: Sorter, distinct?: string): Promise<T[]> {
