@@ -103,7 +103,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   public async findByIds(ids: string[]): Promise<T[]> {
     const objectIds = map(ids, ObjectId);
-    const query = ({ _id: { $in: objectIds } } as unknown) as FilterQuery<T>;
+    const query = { _id: { $in: objectIds } } as unknown as FilterQuery<T>;
     return this.Entity.find(await this.entityPreQuery(query)).exec();
   }
 
@@ -125,7 +125,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     const query = isArray(filters) ? filtersToQuery(filters, this.fieldTranslations) : filterToQuery(filters, this.fieldTranslations);
     const entity = this.Entity;
     return distinct
-      ? entity.distinct(distinct).countDocuments(await this.entityPreQuery(query))
+      ? entity.distinct(distinct, await this.entityPreQuery(query)).countDocuments()
       : entity.countDocuments(await this.entityPreQuery(query));
   }
 
@@ -164,7 +164,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     map(this.extensions, (ext) => {
       result = ext.entityPreUpdate && isFunction(ext.entityPreUpdate) ? ext.entityPreUpdate(result) : result;
     });
-    return (result as unknown) as UpdateQuery<T>;
+    return result as unknown as UpdateQuery<T>;
   }
 
   private async entityPreQuery(query: FilterQuery<T>): Promise<FilterQuery<T>> {
@@ -198,7 +198,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   private static toLodashSort(sortObject: Record<string, SortDirection>): LodashSort {
     const result = unzip(map(keys(sortObject), (key) => [key, get(sortObject, key)]));
-    return { fields: head(result), direction: (last(result) as unknown) as LodashSortDirection[] };
+    return { fields: head(result), direction: last(result) as unknown as LodashSortDirection[] };
   }
 
   private async sortAndExecuteQuery<V extends Document>(query: Query<V[], V>, sort?: Sorter, distinct?: string): Promise<V[]> {
