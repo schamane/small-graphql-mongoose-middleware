@@ -6,7 +6,8 @@ import {
   IResolvers,
   makeExecutableSchema,
   PlaygroundConfig,
-  PubSub
+  PubSub,
+  SchemaDirectiveVisitor
 } from 'apollo-server-express';
 import { Server } from 'http';
 import { authenticate } from 'passport';
@@ -25,14 +26,15 @@ export type GrapqhContext = {
 
 export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
   const typeDefs = compact(map(schemasDefs, 'typeDef'));
-  const schemaDirectives = merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
   const resolvers = compact<IResolvers>(merge(map(schemasDefs, 'resolvers')));
   return makeExecutableSchema({
     typeDefs,
-    resolvers,
-    schemaDirectives
+    resolvers
   });
 };
+
+export const makeSchemaDirectives = (schemasDefs: IExecutableSchemaDefinition[]) =>
+  merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
 
 export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User | Promise<User>;
 
@@ -62,10 +64,12 @@ export const GraphQlServer = (
   graphQlOptions: GraphQlOptions,
   schema: GraphQLSchema,
   authStrategy: string | string[],
+  schemaDirectives?: Record<string, typeof SchemaDirectiveVisitor>,
   createContextFn?: graphQLAuthCreateContext
 ): ApolloServer => {
   const options: ApolloServerExpressConfig = {
     schema,
+    schemaDirectives,
     context: graphqlAuth(authStrategy, createContextFn),
     dataSources,
     playground: graphQlOptions.playground,
