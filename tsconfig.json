@@ -6,7 +6,7 @@
     },
     "incremental": true,
     "tsBuildInfoFile": "./.buildcache/api.tsbuildinfo",
-    "module": "ESNext",
+    "module": "CommonJS",
     "esModuleInterop": true,
     "target": "esnext",
     "noImplicitAny": true,
