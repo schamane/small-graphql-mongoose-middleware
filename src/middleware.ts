@@ -25,10 +25,12 @@ export type GrapqhContext = {
 
 export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
   const typeDefs = compact(map(schemasDefs, 'typeDef'));
+  const schemaDirectives = merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
   const resolvers = compact<IResolvers>(merge(map(schemasDefs, 'resolvers')));
   return makeExecutableSchema({
     typeDefs,
-    resolvers
+    resolvers,
+    schemaDirectives
   });
 };
 
