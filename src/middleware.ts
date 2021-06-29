@@ -4,7 +4,6 @@ import {
   ApolloServerExpressConfig,
   IExecutableSchemaDefinition,
   IResolvers,
-  makeExecutableSchema,
   PlaygroundConfig,
   PubSub,
   SchemaDirectiveVisitor
@@ -24,17 +23,23 @@ export type GrapqhContext = {
   dataSources: Record<string, DataSource>;
 };
 
-export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
+export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): ApolloServerExpressConfig => {
   const typeDefs = compact(map(schemasDefs, 'typeDef'));
+  const schemaDirectives = merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
   const resolvers = compact<IResolvers>(merge(map(schemasDefs, 'resolvers')));
+  /*
   return makeExecutableSchema({
     typeDefs,
-    resolvers
+    resolvers,
+    schemaTransforms
   });
+  */
+  return {
+    typeDefs,
+    resolvers,
+    schemaDirectives
+  };
 };
-
-export const makeSchemaDirectives = (schemasDefs: IExecutableSchemaDefinition[]) =>
-  merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
 
 export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User | Promise<User>;
 
@@ -62,14 +67,12 @@ export const GraphQlServer = (
   app: Application,
   dataSources: ApolloServerDataSources,
   graphQlOptions: GraphQlOptions,
-  schema: GraphQLSchema,
+  schema: ApolloServerExpressConfig,
   authStrategy: string | string[],
-  schemaDirectives?: Record<string, typeof SchemaDirectiveVisitor>,
   createContextFn?: graphQLAuthCreateContext
 ): ApolloServer => {
   const options: ApolloServerExpressConfig = {
-    schema,
-    schemaDirectives,
+    ...schema,
     context: graphqlAuth(authStrategy, createContextFn),
     dataSources,
     playground: graphQlOptions.playground,
