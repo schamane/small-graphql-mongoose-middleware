@@ -1,19 +1,16 @@
 import { get, compact, map, merge } from 'lodash';
-import {
-  ApolloServer,
-  ApolloServerExpressConfig,
-  IExecutableSchemaDefinition,
-  IResolvers,
-  PlaygroundConfig,
-  PubSub,
-  SchemaDirectiveVisitor
-} from 'apollo-server-express';
+import { ApolloServer, ApolloServerExpressConfig, ServerRegistration } from 'apollo-server-express';
+import type { IResolvers } from '@graphql-tools/utils';
+import { IExecutableSchemaDefinition, makeExecutableSchema } from '@graphql-tools/schema';
 import { Server } from 'http';
-import { authenticate } from 'passport';
+import passport from 'passport';
 import { EventEmitter } from 'events';
-import type { GraphQLSchema } from 'graphql';
 import type { Application, Request } from 'express';
 import type { DataSource } from 'apollo-datasource';
+import { GraphQLSchema } from 'graphql/type/schema';
+import { PubSub } from 'graphql-subscriptions';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, subscribe } from 'graphql';
 import { ApolloServerDataSources } from './grapqhl-extras';
 import { User } from './auth/userModel';
 
@@ -23,22 +20,16 @@ export type GrapqhContext = {
   dataSources: Record<string, DataSource>;
 };
 
-export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): ApolloServerExpressConfig => {
+export const makeSchema = (schemasDefs: IExecutableSchemaDefinition[]): GraphQLSchema => {
   const typeDefs = compact(map(schemasDefs, 'typeDef'));
-  const schemaDirectives = merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
+  // const schemaDirectives = merge({}, ...compact(map(schemasDefs, 'schemaDirectives')));
   const resolvers = compact<IResolvers>(merge(map(schemasDefs, 'resolvers')));
-  /*
   return makeExecutableSchema({
     typeDefs,
-    resolvers,
-    schemaTransforms
+    resolvers
+    // TODO: implement shema directices https://www.graphql-tools.com/docs/schema-directives
+    // schemaDirectives
   });
-  */
-  return {
-    typeDefs,
-    resolvers,
-    schemaDirectives
-  };
 };
 
 export type graphQLAuthCreateContext = (user: unknown, authInfo: unknown) => User | Promise<User>;
@@ -50,42 +41,55 @@ const graphqlAuth =
       return get(connection, 'context');
     }
     return new Promise((resolve, reject) =>
-      authenticate(authStrategy, { session: false }, async (err, user, authInfo) =>
+      passport.authenticate(authStrategy, { session: false }, async (err, user, authInfo) =>
         err ? reject(err) : resolve(createContextFn ? await createContextFn(user, authInfo) : user)
       )(req)
     );
   };
 
-export interface GraphQlOptions {
-  path: string;
-  introspection: boolean;
-  playground?: PlaygroundConfig;
-  tracing: boolean;
-}
-
-export const GraphQlServer = (
+export const GraphQlServer = async (
   app: Application,
   dataSources: ApolloServerDataSources,
-  graphQlOptions: GraphQlOptions,
-  schema: ApolloServerExpressConfig,
+  graphQlOptions: Partial<ServerRegistration>,
+  schema: GraphQLSchema,
   authStrategy: string | string[],
   createContextFn?: graphQLAuthCreateContext
-): ApolloServer => {
+): Promise<ApolloServer> => {
   const options: ApolloServerExpressConfig = {
-    ...schema,
+    schema,
     context: graphqlAuth(authStrategy, createContextFn),
-    dataSources,
-    playground: graphQlOptions.playground,
-    subscriptions: graphQlOptions.path
+    dataSources
+    // playground: graphQlOptions.playground,
+    // subscriptions: graphQlOptions.path
   };
 
   const server = new ApolloServer(options);
+  await server.start();
   server.applyMiddleware({ app, ...graphQlOptions });
+  console.log('shema', options.schema);
   return server;
 };
 
-export const installGraphQlSubscriptions = (graphQlServer: ApolloServer, server: Server): void => {
-  graphQlServer.installSubscriptionHandlers(server);
+export const installGraphQlSubscriptions = async (
+  schema: GraphQLSchema,
+  graphQlServer: ApolloServer,
+  server: Server,
+  authStrategy: string | string[],
+  createContextFn?: graphQLAuthCreateContext
+): Promise<SubscriptionServer> => {
+  // graphQlServer.installSubscriptionHandlers(server);
+  return SubscriptionServer.create(
+    {
+      schema,
+      execute,
+      subscribe,
+      onConnect: graphqlAuth(authStrategy, createContextFn)
+    },
+    {
+      server,
+      path: graphQlServer.graphqlPath
+    }
+  );
 };
 
 export const isAllowedUser = (user: User): boolean => {

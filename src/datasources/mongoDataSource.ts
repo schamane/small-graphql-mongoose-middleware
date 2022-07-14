@@ -109,7 +109,7 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
 
   protected async findById(id: string): Promise<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.Entity.findOne(await this.entityPreQuery({ _id: ObjectId(id) } as any));
+    return this.Entity.findOne(await this.entityPreQuery({ _id: new ObjectId(id) } as any));
   }
 
   protected async find(filters: Filter | Filter[], sort?: Sorter, distinct?: string): Promise<T[]> {
@@ -118,7 +118,8 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     if (this.limit) {
       entity.limit(this.limit);
     }
-    return this.sortAndExecuteQuery(entity, sort, distinct);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.sortAndExecuteQuery(entity as any, sort, distinct);
   }
 
   protected async count(filters: Filter | Filter[], distinct?: string): Promise<number> {
@@ -134,7 +135,8 @@ export abstract class MongoDataSource<T extends Document, TContext extends Grapq
     if (this.limit) {
       entity.limit(this.limit);
     }
-    return this.sortAndExecuteQuery(entity, sort, distinct);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.sortAndExecuteQuery(entity as any, sort, distinct);
   }
 
   protected setLimit(limit: number): void {
