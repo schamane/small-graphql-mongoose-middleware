@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "lodash": "^4.17.21",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.21"
   },
   "scripts": {
     "lint": "eslint --ext .ts src/",
@@ -19,6 +19,7 @@
     "clean:build:cache": "rimraf build .buildcache",
     "clean": "npm run -s clean:build && npm run -s clean:build:cache",
     "prepublishOnly": "npm run build",
+    "set-tag": "npm dist-tag add @schamane/small-graphql-mongoose-middleware@1.1.0 v1",
     "build:check": "tsc",
     "watch": "npm run build && tsc -w",
     "build": "npm run clean && tsc",
@@ -26,47 +27,47 @@
     "watch-micro": "microbundle-crl watch --no-compress --target node --external util,events,http --format modern,cjs"
   },
   "devDependencies": {
-    "@types/express": "^4.17.11",
-    "@types/lodash": "^4.14.168",
-    "@types/node": "^14.14.37",
-    "@types/passport": "^1.0.6",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
-    "apollo-datasource": "^0.8.0",
-    "apollo-server-core": "^2.22.2",
-    "apollo-server-express": "^2.22.2",
-    "eslint": "7.23.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-config-recommended": "^4.1.0",
-    "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-prettier": "^3.3.1",
-    "graphql": "^15.5.0",
+    "@types/express": "^4.17.13",
+    "@types/lodash": "^4.14.182",
+    "@types/node": "^18.0.4",
+    "@types/passport": "^1.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
+    "apollo-datasource": "^3.3.2",
+    "apollo-server-core": "v2",
+    "apollo-server-express": "v2",
+    "eslint": "8.19.0",
+    "eslint-config-esnext": "^4.1.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.2.5",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unicorn": "^43.0.1",
+    "graphql": "15.x.x",
     "microbundle-crl": "^0.13.11",
-    "mongoose": "^5.12.2",
-    "passport": "^0.4.1",
-    "prettier-eslint": "^12.0.0",
+    "mongoose": "^6.4.4",
+    "passport": "^0.6.0",
+    "prettier-eslint": "^15.0.1",
     "rimraf": "^3.0.2",
-    "typescript": "4.2.3"
+    "typescript": "4.7.4"
   },
   "peerDependacies": {
-    "apollo-datasource": "^0.8.0",
-    "apollo-server-core": "^2.22.2",
-    "apollo-server-express": "^2.22.2",
-    "mongoose": "^5.12.2",
-    "passport": "^0.4.1"
+    "apollo-datasource": "^3.3.2",
+    "apollo-server-core": "v2",
+    "apollo-server-express": "v2",
+    "mongoose": "^6.4.4",
+    "passport": "^0.6.0"
   },
   "peerDevDependacies": {
-    "@types/express": "^4.17.11",
-    "@types/passport": "^1.0.6"
+    "@types/express": "^4.17.13",
+    "@types/passport": "^1.0.9"
   },
   "resolutions": {
-    "apollo-datasource": "^0.8.0",
-    "apollo-server-core": "^2.22.2",
-    "apollo-server-express": "^2.22.2",
-    "mongoose": "^5.12.2",
-    "passport": "^0.4.1"
+    "apollo-datasource": "^3.3.2",
+    "apollo-server-core": "v2",
+    "apollo-server-express": "v2",
+    "mongoose": "^6.4.4",
+    "passport": "^0.6.0"
   },
   "repository": "schamane/small-graphql-mongoose-middleware",
   "keywords": [
@@ -80,7 +81,7 @@
   "author": "Nazar Kulyk <schamane@myeburg.net> (https://myeburg.net)",
   "license": "MIT",
   "engines": {
-    "node": "^14 || ^15",
-    "npm": "^6.14 || ^7"
+    "node": ">=16.0.0 || >=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

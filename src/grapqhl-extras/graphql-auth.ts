@@ -24,21 +24,25 @@ export const assertRole = (ctx: User): void => {
 export type MyResolverFn<T = unknown> = (rootValue?: any, args?: any, context?: any, info?: any) => T;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const authenticated = <T>(next: MyResolverFn<T>) => (...args: unknown[]): T => {
-  if (!validContext(args[2] as User)) {
-    throw new AuthenticationError(`Forbidden`);
-  }
+export const authenticated =
+  <T>(next: MyResolverFn<T>) =>
+  (...args: unknown[]): T => {
+    if (!validContext(args[2] as User)) {
+      throw new AuthenticationError(`Forbidden`);
+    }
 
-  return next(...args);
-};
+    return next(...args);
+  };
 
-export const onlyWithAdminRole = <T>(next: MyResolverFn<T>, group = 'admin') => (...args: unknown[]): T => {
-  const context = args[2] as User;
-  if (!includes(context.groups, group)) {
-    throw new AuthenticationError(`Missing admin permissions!`);
-  }
-  return next(...args);
-};
+export const onlyWithAdminRole =
+  <T>(next: MyResolverFn<T>, group = 'admin') =>
+  (...args: unknown[]): T => {
+    const context = args[2] as User;
+    if (!includes(context.groups, group)) {
+      throw new AuthenticationError(`Missing admin permissions!`);
+    }
+    return next(...args);
+  };
 
 /* for express
 export const onlyAdminAccess = (req: Request, res: Response, done: () => void): void => {
