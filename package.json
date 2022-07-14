@@ -20,7 +20,7 @@
     "clean": "npm run -s clean:build && npm run -s clean:build:cache",
     "prepublishOnly": "npm run build",
     "set-tag": "npm dist-tag add @schamane/small-graphql-mongoose-middleware@1.1.0 v1",
-    "build:check": "tsc",
+    "build:check": "tsc --noemit",
     "watch": "npm run build && tsc -w",
     "build": "npm run clean && tsc",
     "build-micro": "microbundle-crl --no-compress --target node --external util,events,http --format modern,cjs",
