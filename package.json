@@ -45,7 +45,7 @@
     "eslint-plugin-unicorn": "^43.0.1",
     "graphql": "15.x.x",
     "microbundle-crl": "^0.13.11",
-    "mongoose": "^6.4.4",
+    "mongoose": "^6.4.6",
     "passport": "^0.6.0",
     "prettier-eslint": "^15.0.1",
     "rimraf": "^3.0.2",
